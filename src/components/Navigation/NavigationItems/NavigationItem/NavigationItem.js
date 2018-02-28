@@ -6,8 +6,7 @@ const navigationItem = (props) => {
       <li className={style.NavigationItem}>
         <a 
           href={props.link}
-          className={props.active ? style.active : null}
-        >
+          className={props.active ? style.active : null} >
           {props.children}
         </a>
       </li>
