@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Aux from '../../hoc/Aux';
+import AxiosOrders from '../../axios/axios.orders';
 import Burguer from '../../components/Burguer/Burguer';
 import BurguerControls from '../../components/Burguer/BuildControls/BuildControls';
 import Modal from '../../components/Comum/Modal/Modal';
@@ -91,7 +92,27 @@ class BurguerBuilder extends Component {
     }
 
     purchaseUpdateHandle = () => {
-        alert('You continued.');
+        //alert('You continued.');
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.totalPrice,
+            customer: {
+                name: 'Bruno Souza',
+                address: {
+                    street: 'Rua teste 1',
+                    zipCode: '12345678',
+                    country: 'Brazil'
+                },
+                email: 'teste@teste.com',
+                deliveryMethod: 'fastest'
+            }
+        }
+        
+        // Firebase's routes must finde the .json extension.
+        AxiosOrders
+            .post('/orders.json', order)
+            .then(response => console.log(response))
+            .catch(error => console.log(error));
     }
 
     render() {
