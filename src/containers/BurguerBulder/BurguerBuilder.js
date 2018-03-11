@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import Aux from '../../hoc/Aux';
+import Aux from '../../hoc/Aux/Aux';
 import AxiosOrders from '../../axios/axios.orders';
 import Burguer from '../../components/Burguer/Burguer';
 import BurguerControls from '../../components/Burguer/BuildControls/BuildControls';
 import Modal from '../../components/Comum/Modal/Modal';
 import OrderSummary from '../../components/Burguer/OrderSummary/OrderSummary';
 import Spinner from '../../components/Comum/Spinner/Spinner';
+import withErrorHandle from '../../hoc/withErrorHandle/withErrorHandle';
 
 const INGREDIENT_PRICES = {
     salad: 0.5,
@@ -161,7 +162,7 @@ class BurguerBuilder extends Component {
     }
 }
 
-export default BurguerBuilder;
+export default withErrorHandle(BurguerBuilder, AxiosOrders);
 
 /* BurguerBulder class is statefull, because it will manage the application state. 
    In many cases, you could finde the state inside the constructor method, just like
