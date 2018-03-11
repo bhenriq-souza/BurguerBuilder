@@ -5,6 +5,7 @@ import Burguer from '../../components/Burguer/Burguer';
 import BurguerControls from '../../components/Burguer/BuildControls/BuildControls';
 import Modal from '../../components/Comum/Modal/Modal';
 import OrderSummary from '../../components/Burguer/OrderSummary/OrderSummary';
+import Spinner from '../../components/Comum/Spinner/Spinner';
 
 const INGREDIENT_PRICES = {
     salad: 0.5,
@@ -29,7 +30,8 @@ class BurguerBuilder extends Component {
         },
         totalPrice: 4,
         purchasable: false,
-        purchasing: false
+        purchasing: false,
+        loading: false
     }
 
     updatePurchasaState (ingredients) {
@@ -88,11 +90,12 @@ class BurguerBuilder extends Component {
     }
 
     purchaseCancelHandle = () => {
-        this.setState({ purchasing: false });
+        this.setState({ loading: false, purchasing: false });
     }
 
     purchaseUpdateHandle = () => {
         //alert('You continued.');
+        this.setState({ loading: true });
         const order = {
             ingredients: this.state.ingredients,
             price: this.state.totalPrice,
@@ -111,26 +114,39 @@ class BurguerBuilder extends Component {
         // Firebase's routes must finde the .json extension.
         AxiosOrders
             .post('/orders.json', order)
-            .then(response => console.log(response))
-            .catch(error => console.log(error));
+            .then(response => {
+                this.setState({ loading: false, purchasing: false });
+            })
+            .catch(error => {
+                this.setState({ loading: false, purchasing: false });
+            });
+            
     }
 
     render() {
 
         const disabledInfo = { ...this.state.ingredients };
 
-        // Verify if any ingredients has value smaller then 0. If trues, the button must be disabled.
+        // Verify if any ingredients has value smaller then 0. If its true, the button must be disabled.
         for(let key in disabledInfo)
             disabledInfo[key] = disabledInfo[key] <= 0;
 
-        return(
-            <Aux>
-                <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandle}>
-                    <OrderSummary 
+        let orderSummary = (
+            <OrderSummary 
                         ingredients={this.state.ingredients}
                         price={this.state.totalPrice} 
                         cancel={this.purchaseCancelHandle} 
                         continue={this.purchaseUpdateHandle} />
+        );
+
+        if(this.state.loading) {
+            orderSummary = ( <Spinner /> );
+        }
+
+        return(
+            <Aux>
+                <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandle}>
+                    {orderSummary}
                 </Modal>
                 <Burguer ingredients={this.state.ingredients} />
                 <BurguerControls
