@@ -107,32 +107,17 @@ class BurguerBuilder extends Component {
 
     purchaseUpdateHandle = () => {
         //alert('You continued.');
-        this.setState({ loading: true });
-        const order = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                name: 'Bruno Souza',
-                address: {
-                    street: 'Rua teste 1',
-                    zipCode: '12345678',
-                    country: 'Brazil'
-                },
-                email: 'teste@teste.com',
-                deliveryMethod: 'fastest'
-            }
+        const queryParams = [];
+        let queryString = '';
+        for(let i in this.state.ingredients) {
+            queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]));
         }
-        
-        // Firebase's routes must finde the .json extension.
-        AxiosOrders
-            .post('/orders.json', order)
-            .then(response => {
-                this.setState({ loading: false, purchasing: false });
-            })
-            .catch(error => {
-                this.setState({ loading: false, purchasing: false });
-            });
-            
+        queryParams.push('price=' + this.state.totalPrice);
+        queryString = queryParams.join('&');
+        this.props.history.push({
+            pathname: '/checkout',
+            search: `?${queryString}`
+        });
     }
 
     render() {
@@ -157,10 +142,11 @@ class BurguerBuilder extends Component {
             );
             orderSummary = (
                 <OrderSummary 
-                            ingredients={this.state.ingredients}
-                            price={this.state.totalPrice} 
-                            cancel={this.purchaseCancelHandle} 
-                            continue={this.purchaseUpdateHandle} />
+                        ingredients={this.state.ingredients}
+                        price={this.state.totalPrice} 
+                        cancel={this.purchaseCancelHandle} 
+                        continue={this.purchaseUpdateHandle} 
+                />
             );
         }
         if(this.state.loading) {
