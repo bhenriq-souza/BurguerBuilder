@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 
 import AxiosOrders from '../../axios/axios.orders';
 import Order from '../../components/Order/Order';
+import withErrorHandler from '../../hoc/withErrorHandle/withErrorHandle';
 
 class Orders extends Component {
     state = {
-        orders: []
+        orders: [],
+        loading: true
     }
 
     componentDidMount() {
@@ -15,23 +17,34 @@ class Orders extends Component {
     getOrders = () => {
         AxiosOrders
             .get('/orders.json')
-            .then(res => { 
-                console.log(res);
-                // this.setState({ ingredients: res.data });
+            .then(res => {
+                const arrayOrders = [];
+                for(let key in res.data) {
+                    arrayOrders.push({
+                        ...res.data[key],
+                        id: key
+                    });
+                }
+                this.setState({ loading: false, orders: arrayOrders });
             })
             .catch(error => {
-                // this.setState({ error: true });
+                this.setState({ loading: false });
             });
     }
 
     render() {
         return (
             <div>
-                <Order />
-                <Order />
+                {this.state.orders.map(order => (
+                  <Order 
+                        key={order.id}
+                        ingredients={order.ingredients}
+                        price={order.price}
+                    />  
+                ))}
             </div>
         );
     }
 }
 
-export default Orders;
+export default withErrorHandler(Orders, AxiosOrders);
