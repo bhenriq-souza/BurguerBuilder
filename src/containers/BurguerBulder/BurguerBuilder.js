@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
 import Aux from '../../hoc/Aux/Aux';
 import AxiosOrders from '../../axios/axios.orders';
 import Burguer from '../../components/Burguer/Burguer';
@@ -7,24 +9,10 @@ import Modal from '../../components/Comum/Modal/Modal';
 import OrderSummary from '../../components/Burguer/OrderSummary/OrderSummary';
 import Spinner from '../../components/Comum/Spinner/Spinner';
 import withErrorHandle from '../../hoc/withErrorHandle/withErrorHandle';
-
-const INGREDIENT_PRICES = {
-    salad: 0.5,
-    cheese: 0.4 ,
-    meat: 1.3,
-    bacon: 0.7
-};
+import * as actions from '../../store/actions';
 
 class BurguerBuilder extends Component {
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {
-
-    //     };
-    // }
     state = {
-        ingredients: null,
-        totalPrice: 4,
         purchasable: false,
         purchasing: false,
         loading: false,
@@ -32,7 +20,7 @@ class BurguerBuilder extends Component {
     }
 
     componentDidMount () {
-        this.getIngredients();
+        //this.getIngredients();
     }
 
     getIngredients = () => {
@@ -46,56 +34,14 @@ class BurguerBuilder extends Component {
             });
     }
 
-    updatePurchasaState (ingredients) {
+    updatePurchasaState () {
         // Take a array of values (Object.keys), map it into another array with key-values and reduce it up.
-        const sum = Object.keys(ingredients)
-                            .map((key) => ingredients[key])
+        const sum = Object.keys(this.props.ingredients)
+                            .map((key) => this.props.ingredients[key])
                             .reduce((sum, el) => sum + el, 0);
 
-        this.setState({ purchasable: sum > 0 });
-    }
-
-    addIngredientHandler = (type) => {
-        
-        // updates ingredient counting.
-        const bkpIngredientCount = this.state.ingredients[type];
-        const updateIngredientCount = bkpIngredientCount + 1;
-        const updatedIngredients = { ...this.state.ingredients };
-        updatedIngredients[type] = updateIngredientCount;
-
-        // updates final price.
-        const bkpPrice = this.state.totalPrice;
-        const updatedPrice = INGREDIENT_PRICES[type] + bkpPrice;
-
-        // updates the state.
-        this.setState({ ingredients: updatedIngredients, totalPrice: updatedPrice });
-
-        // Verify if the order is purchasable
-        this.updatePurchasaState(updatedIngredients);
-    }
-
-    removeIngredientHandler = (type) => {
-
-        // updates ingredient counting, only if there are ingredients yet.
-        const bkpIngredientCount = this.state.ingredients[type];
-        
-        if(bkpIngredientCount <= 0)
-            return;
-            
-        const updateIngredientCount = bkpIngredientCount - 1;
-        const updatedIngredients = { ...this.state.ingredients };
-        updatedIngredients[type] = updateIngredientCount;
-        
-        // updates final price.
-        const bkpPrice = this.state.totalPrice;
-        const updatedPrice = bkpPrice - INGREDIENT_PRICES[type];
-
-        // updates the state.
-        this.setState({ ingredients: updatedIngredients, totalPrice: updatedPrice });
-
-        // Verify if the order is purchasable
-        this.updatePurchasaState(updatedIngredients);
-    }
+        return sum > 0;
+    }    
 
     purchaseHandle = () => {
         this.setState({ purchasing: true });
@@ -106,44 +52,33 @@ class BurguerBuilder extends Component {
     }
 
     purchaseUpdateHandle = () => {
-        //alert('You continued.');
-        const queryParams = [];
-        let queryString = '';
-        for(let i in this.state.ingredients) {
-            queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]));
-        }
-        queryParams.push('price=' + this.state.totalPrice);
-        queryString = queryParams.join('&');
-        this.props.history.push({
-            pathname: '/checkout',
-            search: `?${queryString}`
-        });
+        this.props.history.push('/checkout');
     }
 
     render() {
-        const disabledInfo = { ...this.state.ingredients };
+        const disabledInfo = { ...this.props.ingredients };
         // Verify if any ingredients has value smaller then 0. If its true, the button must be disabled.
         for(let key in disabledInfo)
             disabledInfo[key] = disabledInfo[key] <= 0;
         let orderSummary = null;
         let burguer = this.state.error ? <p>Ingredients can't be loaded.</p> : <Spinner />;
-        if(this.state.ingredients) {
+        if(this.props.ingredients) {            
             burguer = (
                 <Aux>
-                    <Burguer ingredients={this.state.ingredients} />
+                    <Burguer ingredients={this.props.ingredients} />
                     <BurguerControls
                         disabled={disabledInfo}
-                        ingredientAdded={this.addIngredientHandler}
-                        ingredientRemoved={this.removeIngredientHandler}
-                        price={this.state.totalPrice}
-                        purchasable={this.state.purchasable} 
+                        ingredientAdded={this.props.onAddIngredient}
+                        ingredientRemoved={this.props.onRemoveIngredient}
+                        price={this.props.totalPrice}
+                        purchasable={this.updatePurchasaState()} 
                         ordered={this.purchaseHandle} />
                 </Aux>
             );
             orderSummary = (
                 <OrderSummary 
-                        ingredients={this.state.ingredients}
-                        price={this.state.totalPrice} 
+                        ingredients={this.props.ingredients}
+                        price={this.props.totalPrice} 
                         cancel={this.purchaseCancelHandle} 
                         continue={this.purchaseUpdateHandle} 
                 />
@@ -163,10 +98,24 @@ class BurguerBuilder extends Component {
     }
 }
 
-export default withErrorHandle(BurguerBuilder, AxiosOrders);
+const mapStateToProps = state => {
+    return {
+        ingredients: state.ingredients,
+        totalPrice: state.totalPrice
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onAddIngredient: (name) => dispatch({ type: actions.ADD_INGREDIENTS, payload: { ingredient: name } }),
+        onRemoveIngredient: (name) => dispatch({ type: actions.REMOVE_INGREDIENTS, payload: { ingredient: name } }),
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandle(BurguerBuilder, AxiosOrders));
 
 /* BurguerBulder class is statefull, because it will manage the application state. 
-   In many cases, you could finde the state inside the constructor method, just like
+   In many cases, you could find the state inside the constructor method, just like
    showed in comments.
    The state free in a class, just as a JSON object, its a modern approach.
 */
