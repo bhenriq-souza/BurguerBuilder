@@ -9,30 +9,17 @@ import Modal from '../../components/Comum/Modal/Modal';
 import OrderSummary from '../../components/Burguer/OrderSummary/OrderSummary';
 import Spinner from '../../components/Comum/Spinner/Spinner';
 import withErrorHandle from '../../hoc/withErrorHandle/withErrorHandle';
-import * as actions from '../../store/actions';
+import * as actionsCreators from '../../store/actions/index';
 
 class BurguerBuilder extends Component {
     state = {
         purchasable: false,
-        purchasing: false,
-        loading: false,
-        error: false
+        purchasing: false        
     }
 
     componentDidMount () {
-        //this.getIngredients();
-    }
-
-    getIngredients = () => {
-        AxiosOrders
-            .get('/ingredients.json')
-            .then(res => { 
-                this.setState({ ingredients: res.data });
-            })
-            .catch(error => {
-                this.setState({ error: true });
-            });
-    }
+        this.props.onSetIngredients();
+    }    
 
     updatePurchasaState () {
         // Take a array of values (Object.keys), map it into another array with key-values and reduce it up.
@@ -61,7 +48,7 @@ class BurguerBuilder extends Component {
         for(let key in disabledInfo)
             disabledInfo[key] = disabledInfo[key] <= 0;
         let orderSummary = null;
-        let burguer = this.state.error ? <p>Ingredients can't be loaded.</p> : <Spinner />;
+        let burguer = this.props.error ? <p>Ingredients can't be loaded.</p> : <Spinner />;
         if(this.props.ingredients) {            
             burguer = (
                 <Aux>
@@ -83,10 +70,7 @@ class BurguerBuilder extends Component {
                         continue={this.purchaseUpdateHandle} 
                 />
             );
-        }
-        if(this.state.loading) {
-            orderSummary = ( <Spinner /> );
-        }
+        }       
         return(
             <Aux>
                 <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandle}>
@@ -101,14 +85,16 @@ class BurguerBuilder extends Component {
 const mapStateToProps = state => {
     return {
         ingredients: state.ingredients,
-        totalPrice: state.totalPrice
+        totalPrice: state.totalPrice,
+        error: state.error
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        onAddIngredient: (name) => dispatch({ type: actions.ADD_INGREDIENTS, payload: { ingredient: name } }),
-        onRemoveIngredient: (name) => dispatch({ type: actions.REMOVE_INGREDIENTS, payload: { ingredient: name } }),
+        onAddIngredient: (name) => dispatch(actionsCreators.addIngredients({ ingredient: name })),
+        onRemoveIngredient: (name) => dispatch(actionsCreators.removeIngredients({ ingredient: name })),
+        onSetIngredients: () => dispatch(actionsCreators.initIngredients())
     };
 };
 
