@@ -23,7 +23,7 @@ export const initIngredients = () => {
                 dispatch(setIngredients({ ingredients: response.data }));
             })
             .catch(error => {
-                dispatch(fetchIngredientsFailed());
+                dispatch(fetchFailed());
             });
     };
 };
@@ -32,14 +32,53 @@ const setIngredients = payload => {
     return {
         type: actionTypes.SET_INGREDIENTS,
         payload: payload
-    }
+    };
 };
 
-const fetchIngredientsFailed = () => {
+export const initTotalPrice = () => {
+    return dispatch => {
+        AxiosOrders
+            .get('/price.json')
+            .then( response => {
+                dispatch(setPrice({ initialPrice: response.data }));
+            })
+            .catch( error => {
+                dispatch(fetchFailed());
+            });
+    };
+};
+
+const setPrice = payload => {
     return {
-        type: actionTypes.FETCH_INGREDIENTS_FAILED        
-    }
+        type: actionTypes.SET_INITIAL_TOTAL,
+        payload: payload
+    };
+};
+
+export const initIngredientsPrice = () => {
+    return dispatch => {
+        AxiosOrders
+            .get('/ingredientPrices.json')
+            .then( response => {
+                dispatch(setIngredientPrices({ ingredientPrices: response.data }));
+            })
+            .catch( error => {
+                dispatch(fetchFailed());
+            });
+    };
 }
 
+export const setIngredientPrices = payload => {
+    return {
+        type: actionTypes.SET_INGREDIENTS_PRICES,
+        payload: payload
+    };
+};
+
+const fetchFailed = () => {
+    return {
+        type: actionTypes.FETCH_FAILED 
+    };
+};
 
 

@@ -19,6 +19,8 @@ class BurguerBuilder extends Component {
 
     componentDidMount () {
         this.props.onSetIngredients();
+        this.props.onSetInitialPrice();
+        this.props.onSetIngredientPrices();
     }    
 
     updatePurchasaState () {
@@ -39,6 +41,7 @@ class BurguerBuilder extends Component {
     }
 
     purchaseUpdateHandle = () => {
+        this.props.onInitPurchase();
         this.props.history.push('/checkout');
     }
 
@@ -84,9 +87,9 @@ class BurguerBuilder extends Component {
 
 const mapStateToProps = state => {
     return {
-        ingredients: state.ingredients,
-        totalPrice: state.totalPrice,
-        error: state.error
+        ingredients: state.burguerBuilder.ingredients,
+        totalPrice: state.burguerBuilder.totalPrice,
+        error: state.burguerBuilder.error
     };
 };
 
@@ -94,7 +97,10 @@ const mapDispatchToProps = dispatch => {
     return {
         onAddIngredient: (name) => dispatch(actionsCreators.addIngredients({ ingredient: name })),
         onRemoveIngredient: (name) => dispatch(actionsCreators.removeIngredients({ ingredient: name })),
-        onSetIngredients: () => dispatch(actionsCreators.initIngredients())
+        onSetIngredients: () => dispatch(actionsCreators.initIngredients()),
+        onSetInitialPrice: () => dispatch(actionsCreators.initTotalPrice()),
+        onSetIngredientPrices: () => dispatch(actionsCreators.initIngredientsPrice()),
+        onInitPurchase: () => dispatch(actionsCreators.purchaseBurguerInit())
     };
 };
 
