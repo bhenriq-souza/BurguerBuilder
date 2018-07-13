@@ -1,11 +1,11 @@
 import AxiosOrders from '../../axios/axios.orders';
 import * as actionTypes from '../actions/actionTypes';
 
-export const purchaseBurguer = (orderData) => {
+export const purchaseBurguer = (orderData, token) => {
     return dispatch => {
         dispatch(purchaseBurguerStart());
         AxiosOrders
-            .post('/orders.json', orderData) 
+            .post(`/orders.json?auth=${token}`, orderData)  
             .then( response => {
                 dispatch(purchaseBurguerSuccess(response.data.name, orderData));
             })
