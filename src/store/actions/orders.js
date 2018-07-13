@@ -44,11 +44,11 @@ export const purchaseBurguerInit = () => {
     };
 };
 
-export const fetchOrders = () => {    
+export const fetchOrders = (token) => {    
     return dispatch => {
         dispatch(fetchOrdersStart());
         AxiosOrders
-            .get('/orders.json')
+            .get(`/orders.json?auth=${token}`)
             .then( response => {
                 const arrayOrders = [];
                 for(let key in response.data) {

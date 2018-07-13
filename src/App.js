@@ -5,6 +5,7 @@ import BurguerBuilder from '../src/containers/BurguerBulder/BurguerBuilder';
 import Checkout from './containers/Checkout/Checkout';
 import Layout from './hoc/Layout/Layout';
 import Orders from './containers/Orders/Orders';
+import Auth from './containers/Authentication/Athentication';
 
 class App extends Component {
   render() {
@@ -14,6 +15,7 @@ class App extends Component {
           <Switch>
             <Route path="/checkout" component={Checkout} />
             <Route path="/orders" component={Orders} />
+            <Route path="/auth" component={Auth} />
             <Route path="/" exact component={BurguerBuilder} />
           </Switch>
         </Layout>
