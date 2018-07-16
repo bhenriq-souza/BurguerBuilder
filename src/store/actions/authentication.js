@@ -18,12 +18,18 @@ export const authenticateUser = (email, password, isSignup) => {
 
         axios.post(url, authData)
             .then( response => {
+                const idToken = response.data.idToken, localId = response.data.localId, expiresIn = response.data.expiresIn;
+                const expirationTime = new Date().getTime() + ( expiresIn * 1000 );
+                const expirationDate = new Date(expirationTime);
+                localStorage.setItem('token', idToken);
+                localStorage.setItem('expirationDate', expirationDate);
+                localStorage.setItem('userId', localId);
                 const payload = {
-                    idToken: response.data.idToken, 
-                    userId: response.data.localId 
+                    idToken: idToken, 
+                    userId: localId 
                 };
                 dispatch(authSuccess(payload));
-                dispatch(checkAuthTime(response.data.expiresIn));
+                dispatch(checkAuthTime(expiresIn));
             })
             .catch( error => {
                 dispatch(authFailed(error.response.data.error));
@@ -60,6 +66,8 @@ export const authFailed = error => {
 };
 
 export const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('expirationDate');
     return {
         type: actionTypes.AUTH_LOGOUT
     };
@@ -70,4 +78,23 @@ export const setAuthRedirectPath = path => {
         type: actionTypes.SET_AUTH_REDIRECT_PATH,
         path: path
     };
+};
+
+export const authCheckState = () => {
+    return dispatch => {
+        const token = localStorage.getItem('token');
+        if(!token) {
+            dispatch(logout());
+        } else {
+            const expirationDate = new Date(localStorage.getItem('expirationDate'));
+            const userId = localStorage.getItem('userId');
+            const timeToExpires = (expirationDate.getTime() - new Date().getTime()) / 1000;
+            if(expirationDate <= new Date()) {
+                dispatch(logout());
+            } else {
+                dispatch(authSuccess({ idToken: token, userId: userId }));
+                dispatch(checkAuthTime(timeToExpires));                
+            }            
+        }
+    }
 };
