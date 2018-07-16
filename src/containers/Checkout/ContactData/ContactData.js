@@ -206,7 +206,7 @@ const mapStateToProps = state => {
         totalPrice: state.burguerBuilder.totalPrice,
         loading: state.order.loading,
         token: state.auth.token,
-        auth: state.auth.userId
+        userId: state.auth.userId
     };
 };
 
